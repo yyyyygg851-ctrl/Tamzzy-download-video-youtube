@@ -1,0 +1,792 @@
+<!doctype html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030816">
+<title>TAMZZY — YouTube Downloader</title><style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0
+}
+
+:root{
+  --bg:#020611;
+  --panel:#071326;
+  --panel2:#0a1830;
+  --line:#17345c;
+  --blue:#168cff;
+  --blue2:#00c8ff;
+  --text:#edf6ff;
+  --muted:#7890ad;
+  --danger:#ff4f70;
+}
+
+body{
+  min-height:100vh;
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+  background:
+    radial-gradient(circle at 50% -10%,#0b4380 0,transparent 34%),
+    radial-gradient(circle at 100% 100%,#062b5a 0,transparent 30%),
+    var(--bg);
+  overflow-x:hidden;
+}
+
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(rgba(0,145,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,145,255,.025) 1px,transparent 1px);
+  background-size:35px 35px;
+}
+
+.loader{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#020611;
+  transition:.5s;
+}
+
+.loader.hide{
+  opacity:0;
+  visibility:hidden;
+}
+
+.loaderBox{
+  text-align:center;
+}
+
+.loaderLogo{
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:3px;
+  color:#fff;
+  text-shadow:0 0 25px #168cff;
+}
+
+.spinner{
+  width:42px;
+  height:42px;
+  margin:20px auto;
+  border:3px solid #123052;
+  border-top-color:#16a8ff;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+.loaderText{
+  color:#7293b9;
+  font-size:12px;
+  letter-spacing:2px;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+.app{
+  width:min(900px,calc(100% - 28px));
+  margin:auto;
+  padding:25px 0 50px;
+}
+
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:28px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo{
+  width:45px;
+  height:45px;
+  display:grid;
+  place-items:center;
+  border:1px solid #237fd1;
+  border-radius:13px;
+  background:#071a34;
+  box-shadow:0 0 25px rgba(0,140,255,.25);
+  font-weight:900;
+  color:#21a8ff;
+}
+
+.brand h1{
+  font-size:19px;
+}
+
+.brand span{
+  display:block;
+  margin-top:4px;
+  color:#6985a6;
+  font-size:11px;
+}
+
+.menuBtn{
+  width:43px;
+  height:43px;
+  border:1px solid var(--line);
+  background:#071326;
+  border-radius:12px;
+  color:#fff;
+  cursor:pointer;
+  font-size:22px;
+}
+
+.menu{
+  position:absolute;
+  right:14px;
+  top:75px;
+  z-index:20;
+  width:190px;
+  padding:8px;
+  border:1px solid #173b68;
+  border-radius:14px;
+  background:#061123;
+  box-shadow:0 15px 50px #000;
+  display:none;
+}
+
+.menu.show{
+  display:block;
+}
+
+.menu button{
+  width:100%;
+  padding:12px;
+  border:0;
+  background:transparent;
+  color:#b9cee5;
+  text-align:left;
+  border-radius:9px;
+  cursor:pointer;
+}
+
+.menu button:hover{
+  background:#0b213d;
+  color:#fff;
+}
+
+.hero{
+  padding:30px 20px;
+  text-align:center;
+  border:1px solid #123258;
+  border-radius:22px;
+  background:linear-gradient(145deg,rgba(8,25,49,.92),rgba(3,12,25,.94));
+  box-shadow:
+    0 0 45px rgba(0,120,255,.08),
+    inset 0 0 35px rgba(0,110,255,.03);
+}
+
+.badge{
+  display:inline-block;
+  padding:7px 11px;
+  margin-bottom:15px;
+  border:1px solid #164f84;
+  border-radius:30px;
+  background:#061a31;
+  color:#2eb4ff;
+  font-size:10px;
+  font-weight:bold;
+  letter-spacing:1.5px;
+}
+
+.hero h2{
+  font-size:clamp(27px,7vw,48px);
+  line-height:1.05;
+  margin-bottom:12px;
+}
+
+.hero h2 b{
+  color:#16a4ff;
+  text-shadow:0 0 25px rgba(0,155,255,.5);
+}
+
+.hero p{
+  max-width:590px;
+  margin:auto;
+  color:#7590ae;
+  line-height:1.6;
+  font-size:13px;
+}
+
+.search{
+  display:flex;
+  gap:9px;
+  margin-top:24px;
+  padding:7px;
+  border:1px solid #174272;
+  border-radius:15px;
+  background:#030b18;
+  box-shadow:0 0 25px rgba(0,110,255,.08);
+}
+
+.search input{
+  min-width:0;
+  flex:1;
+  border:0;
+  outline:0;
+  padding:14px;
+  color:#fff;
+  background:transparent;
+  font-size:14px;
+}
+
+.search input::placeholder{
+  color:#4f6988;
+}
+
+.search button{
+  border:0;
+  padding:0 19px;
+  border-radius:10px;
+  color:#fff;
+  background:linear-gradient(135deg,#0878ed,#00a8ff);
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 0 20px rgba(0,140,255,.25);
+}
+
+.search button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.status{
+  display:none;
+  margin-top:14px;
+  padding:11px;
+  border-radius:10px;
+  background:#06172b;
+  color:#7599bd;
+  font-size:12px;
+}
+
+.status.show{
+  display:block;
+}
+
+.status.error{
+  color:#ff7891;
+  border:1px solid #5a2130;
+}
+
+.result{
+  display:none;
+  margin-top:20px;
+  overflow:hidden;
+  border:1px solid #15395f;
+  border-radius:19px;
+  background:#061123;
+}
+
+.result.show{
+  display:block;
+  animation:up .35s ease;
+}
+
+@keyframes up{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
+}
+
+.videoInfo{
+  display:flex;
+  gap:15px;
+  padding:15px;
+}
+
+.thumb{
+  width:190px;
+  aspect-ratio:16/9;
+  object-fit:cover;
+  border-radius:12px;
+  background:#020711;
+}
+
+.info{
+  flex:1;
+  min-width:0;
+}
+
+.info h3{
+  font-size:17px;
+  line-height:1.4;
+  margin-bottom:8px;
+}
+
+.info p{
+  color:#6d89a9;
+  font-size:12px;
+  line-height:1.6;
+}
+
+.downloads{
+  padding:15px;
+  border-top:1px solid #102c4d;
+}
+
+.downloadsTitle{
+  margin-bottom:12px;
+  color:#87a8ca;
+  font-size:11px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+.media{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:9px;
+}
+
+.media a{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:13px;
+  border:1px solid #153a61;
+  border-radius:12px;
+  color:#dcecff;
+  text-decoration:none;
+  background:#07182d;
+  transition:.2s;
+}
+
+.media a:hover{
+  border-color:#159cff;
+  background:#09203c;
+  box-shadow:0 0 20px rgba(0,140,255,.1);
+}
+
+.media strong{
+  display:block;
+  font-size:12px;
+}
+
+.media small{
+  display:block;
+  margin-top:4px;
+  color:#6281a3;
+  font-size:10px;
+}
+
+.arrow{
+  color:#1da9ff;
+  font-size:18px;
+}
+
+.empty{
+  padding:25px;
+  text-align:center;
+  color:#6c88a8;
+  font-size:12px;
+}
+
+.features{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:15px;
+}
+
+.feature{
+  padding:16px 12px;
+  border:1px solid #102d4e;
+  border-radius:14px;
+  background:#061123;
+}
+
+.feature b{
+  display:block;
+  margin-bottom:6px;
+  font-size:12px;
+}
+
+.feature span{
+  color:#637f9e;
+  font-size:10px;
+  line-height:1.5;
+}
+
+footer{
+  margin-top:25px;
+  text-align:center;
+  color:#3f5875;
+  font-size:10px;
+}
+
+@media(max-width:620px){
+  .app{
+    width:min(100% - 18px,900px);
+    padding-top:15px;
+  }
+
+  .videoInfo{
+    display:block;
+  }
+
+  .thumb{
+    width:100%;
+    margin-bottom:12px;
+  }
+
+  .media{
+    grid-template-columns:1fr;
+  }
+
+  .features{
+    grid-template-columns:1fr;
+  }
+
+  .search{
+    display:block;
+    padding:8px;
+  }
+
+  .search input{
+    width:100%;
+    height:48px;
+  }
+
+  .search button{
+    width:100%;
+    height:45px;
+  }
+}
+</style></head><body><div class="loader" id="loader">
+  <div class="loaderBox">
+    <div class="loaderLogo">TAMZZY</div>
+    <div class="spinner"></div>
+    <div class="loaderText">DOWNLOADER SYSTEM</div>
+  </div>
+</div><div class="app"><header>
+  <div class="brand">
+    <div class="logo">T</div>
+    <div>
+      <h1>TAMZZY DOWNLOADER</h1>
+      <span>VIDEO & AUDIO DOWNLOADER</span>
+    </div>
+  </div><button class="menuBtn" id="menuBtn">⋮</button>
+
+  <div class="menu" id="menu">
+    <button onclick="clearResult()">Clear Result</button>
+    <button onclick="showAbout()">About</button>
+  </div>
+</header><section class="hero">  <div class="badge">SYSTEM ONLINE</div>  <h2>Download <b>Video</b><br>dan Audio</h2>  <p>
+    Masukkan URL video yang ingin diproses.
+    Pilihan media yang tersedia akan ditampilkan setelah proses selesai.
+  </p>  <div class="search">
+    <input
+      id="url"
+      type="url"
+      placeholder="Tempel URL YouTube di sini..."
+      autocomplete="off"
+    >
+    <button id="processBtn">PROSES</button>
+  </div>  <div class="status" id="status"></div></section><section class="result" id="result">  <div class="videoInfo"><img id="thumb" class="thumb" alt="Thumbnail">
+
+<div class="info">
+  <h3 id="title">-</h3>
+  <p id="meta">-</p>
+</div>
+
+  </div>  <div class="downloads"><div class="downloadsTitle">
+  Available Downloads
+</div>
+
+<div class="media" id="mediaList"></div>
+
+  </div></section><section class="features">  <div class="feature">
+    <b>VIDEO</b>
+    <span>Pilihan format video yang tersedia dari server.</span>
+  </div>  <div class="feature">
+    <b>AUDIO</b>
+    <span>Format audio yang tersedia akan ditampilkan otomatis.</span>
+  </div>  <div class="feature">
+    <b>FAST PROCESS</b>
+    <span>Request diproses melalui backend server.</span>
+  </div></section><footer>
+  TAMZZY DOWNLOADER · Gunakan hanya untuk konten yang kamu punya izin untuk unduh.
+</footer></div><script>
+const $ = id => document.getElementById(id);
+
+const urlInput = $("url");
+const processBtn = $("processBtn");
+const statusBox = $("status");
+const result = $("result");
+const mediaList = $("mediaList");
+
+$("menuBtn").onclick = () => {
+  $("menu").classList.toggle("show");
+};
+
+document.addEventListener("click", e => {
+  if(!e.target.closest("header")){
+    $("menu").classList.remove("show");
+  }
+});
+
+function status(text, error=false){
+  statusBox.textContent = text;
+  statusBox.className = "status show" + (error ? " error" : "");
+}
+
+function clearResult(){
+  result.classList.remove("show");
+  mediaList.innerHTML = "";
+  statusBox.className = "status";
+  urlInput.value = "";
+}
+
+function showAbout(){
+  status(
+    "TAMZZY Downloader menggunakan backend Node.js untuk memproses request."
+  );
+}
+
+function validYoutube(url){
+  try{
+    const u = new URL(url);
+    return (
+      u.hostname.includes("youtube.com") ||
+      u.hostname === "youtu.be" ||
+      u.hostname.includes("youtube-nocookie.com")
+    );
+  }catch{
+    return false;
+  }
+}
+
+function safeText(value){
+  return value == null ? "" : String(value);
+}
+
+function findMediaArray(data){
+  const candidates = [
+    data?.data?.medias,
+    data?.medias,
+    data?.data?.data?.medias
+  ];
+
+  for(const item of candidates){
+    if(Array.isArray(item)) return item;
+  }
+
+  return [];
+}
+
+function mediaName(item){
+  return (
+    item?.quality ||
+    item?.label ||
+    item?.format ||
+    item?.type ||
+    "Download"
+  );
+}
+
+function mediaType(item){
+  const text = (
+    (item?.type || "") + " " +
+    (item?.format || "") + " " +
+    (item?.mime || "")
+  ).toLowerCase();
+
+  if(text.includes("audio")) return "AUDIO";
+  if(text.includes("video")) return "VIDEO";
+
+  return item?.audio ? "AUDIO" : "MEDIA";
+}
+
+function mediaUrl(item){
+  return (
+    item?.url ||
+    item?.download ||
+    item?.downloadUrl ||
+    item?.link ||
+    item?.src ||
+    ""
+  );
+}
+
+function mediaSize(item){
+  return item?.size || item?.filesize || item?.fileSize || "";
+}
+
+function renderMedia(data){
+
+  const medias = findMediaArray(data);
+
+  mediaList.innerHTML = "";
+
+  if(!medias.length){
+    mediaList.innerHTML =
+      '<div class="empty">Tidak ada media yang dikembalikan server.</div>';
+    return;
+  }
+
+  medias.forEach((item, index) => {
+
+    const link = mediaUrl(item);
+
+    if(!link) return;
+
+    const a = document.createElement("a");
+
+    a.href = link;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+
+    const left = document.createElement("div");
+
+    const strong = document.createElement("strong");
+    strong.textContent = mediaName(item);
+
+    const small = document.createElement("small");
+
+    const size = mediaSize(item);
+
+    small.textContent =
+      mediaType(item) +
+      (size ? " · " + size : "");
+
+    left.appendChild(strong);
+    left.appendChild(small);
+
+    const arrow = document.createElement("div");
+    arrow.className = "arrow";
+    arrow.textContent = "→";
+
+    a.appendChild(left);
+    a.appendChild(arrow);
+
+    mediaList.appendChild(a);
+  });
+
+  if(!mediaList.children.length){
+    mediaList.innerHTML =
+      '<div class="empty">URL download tidak tersedia.</div>';
+  }
+}
+
+async function processVideo(){
+
+  const url = urlInput.value.trim();
+
+  if(!url){
+    status("Masukkan URL terlebih dahulu.", true);
+    return;
+  }
+
+  if(!validYoutube(url)){
+    status("URL harus berupa URL YouTube yang valid.", true);
+    return;
+  }
+
+  processBtn.disabled = true;
+  processBtn.textContent = "PROSES...";
+
+  result.classList.remove("show");
+  status("Sedang mengambil informasi video...");
+
+  try{
+
+    const response = await fetch("/api/download", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({url})
+    });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(data?.error || "Request gagal.");
+    }
+
+    const info =
+      data?.data?.info ||
+      data?.info ||
+      data?.data ||
+      {};
+
+    const title =
+      info?.title ||
+      data?.title ||
+      "YouTube Video";
+
+    const thumbnail =
+      info?.thumbnail ||
+      info?.thumbnailUrl ||
+      data?.thumbnail ||
+      "";
+
+    $("title").textContent = title;
+
+    $("meta").textContent =
+      info?.author ||
+      info?.channel ||
+      "Video berhasil diproses.";
+
+    if(thumbnail){
+      $("thumb").src = thumbnail;
+      $("thumb").style.display = "block";
+    }else{
+      $("thumb").removeAttribute("src");
+    }
+
+    renderMedia(data);
+
+    result.classList.add("show");
+    status("Video berhasil diproses.");
+
+  }catch(error){
+
+    console.error(error);
+
+    status(
+      error.message || "Terjadi kesalahan saat memproses video.",
+      true
+    );
+
+  }finally{
+
+    processBtn.disabled = false;
+    processBtn.textContent = "PROSES";
+
+  }
+}
+
+processBtn.addEventListener("click", processVideo);
+
+urlInput.addEventListener("keydown", e => {
+  if(e.key === "Enter"){
+    processVideo();
+  }
+});
+
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    $("loader").classList.add("hide");
+  }, 900);
+});
+</script></body>
+  </html>
